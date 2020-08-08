@@ -69,9 +69,9 @@ ROLE: `lambda-dynamodb-url-shortener-role`\
 Note that I have added comments in the function to understand better. Make sute to set the region and dynamo db table name to approriate value. 
 3. Add 3 environment varables to the lamdba function. \
 ```markdown
-APP_URL : CLOUNDFRONT URL or CUSTOM DOMAIN URL to be added later (example : https://d24bkyagqs44nj.cloudfront.net/t/ ) \
-MIN_CHAR : 12 \
-MAX_CHAR : 16 \
+APP_URL : CLOUNDFRONT URL or CUSTOM DOMAIN URL to be added later (example : https://d24bkyagqs44nj.cloudfront.net/t/ ) 
+MIN_CHAR : 12 
+MAX_CHAR : 16 
 ```
 
 ### Lamdba to create Retrieve Long URL
@@ -94,12 +94,49 @@ Note that I have added comments in the function to understand better. Make sute 
 3. Create a `GET` method with integration type as `MOCK`.  Once done it will show you a screen similar to the once below
 ![](Screenshot 2020-08-08 at 4.52.26 PM.png)
 
-4. Now we will set up the Integration Reponse so that if we enter http://OUR-URL/admin , we get the homepage. Select the `Intergration Response` under GET method
+4. Now we will set up the Integration Reponse so that if we enter `http://URL/admin` , it send a get reponse to fetch our homepage. Select the `Intergration Response` under GET method
 5. Under `Mapping Templates`,  click `application\json`.
 6. Copy paste the [Code present here](https://github.com/jeeri2204/Serverless-URL-Shortner/blob/gh-pages/adminfile) just like on the image shown below.
 ![](Screenshot 2020-08-08 at 4.55.46 PM.png)
 
+7. Select the root resource `/` resource and then create another resource called `\create`. 
+![](Screenshot 2020-08-08 at 5.10.38 PM.png)
 
+8.Create a `POST` method,  select `Integration Type` as Lamdba function `url-shortener-create` which was used to convert long url to short.
+![](Screenshot 2020-08-08 at 5.11.10 PM.png)
+
+9. ***When we enter the long URL on the home page(http://URL/admin) and select the Button to shorten it,  it send a POST request to the resouce \create via API Gateway to trigger the lamdba function. Once done it will look something like the image below***
+![](Screenshot 2020-08-08 at 5.12.03 PM.png)
+
+10. Select the root resource `/` resource and then create another resource called `\t`. We do this do that any short url which is created will be of format http://URL/t/shortid
+![](Screenshot 2020-08-08 at 5.20.44 PM.png)
+
+11. Select `/t` and create another resource `/shortid` with `Resource Path` as `{shortid}`.
+![](Screenshot 2020-08-08 at 5.21.08 PM.png)
+
+12. Create a `/GET` method under it. Select the lambda as `url-shortener-retrieve` which is used to return long url when we browse short url
+![](Screenshot 2020-08-08 at 5.21.31 PM.png)
+
+13. Go to the `Integration Request` under the above created GET method 
+14. Under `Mapping Templates`, add ContentType as `application/json` and add the below json
+```markdown
+{
+    "short_id": "$input.params('shortid')"
+}
+```
+![](Screenshot 2020-08-08 at 5.23.43 PM.png)
+
+15. Under `Method Response` for GET, delete the 200 HTTP status code and add a 301 status code which will be used for redirection.
+16. Add `Location` as the Responce header
+![](Screenshot 2020-08-08 at 5.22.18 PM.png)
+
+17. Under `Integration Response` for the GET, delete the 200 Status Code and add `301`.  Add Response hearder `Location` value as `integration.response.body.location`. This extracts the value from the lamdba function
+![](Screenshot 2020-08-08 at 5.24.44 PM.png)
+
+18. ***What this does is when we provide the short url (whcih is in format https://URL/t/xxxxx) it triggers the lamdba function `url-shortener-retrieve`. This function returns `{"statusCode": 301,"location": long_url}`.  The Intergration Response takes the short url which we provide and redirects it to the long_url***
+
+19. Once done, Select the `Deploy API` option from action, provide the stage name such as test and click Deploy. You will be provided with the endpoint followed by the stage name.
+![](Screenshot 2020-08-08 at 5.51.38 PM.png)
 
 ### Sources 
 [1] https://aws.amazon.com/dynamodb \
