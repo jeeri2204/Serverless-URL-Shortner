@@ -226,6 +226,6 @@ Our basic execution of the application is over. These are some of the added step
 [5] https://aws.amazon.com/iam \
 [6] https://aws.amazon.com/route53 \
 [7] https://aws.amazon.com/cloudfront \
-[8] https://aws.amazon.com/certificate-manager 
+[8] https://aws.amazon.com/certificate-manager \
 [9] https://aws.amazon.com/blogs/compute/build-a-serverless-private-url-shortener \
 [10] https://blog.ruanbekker.com/blog/2018/11/30/how-to-setup-a-serverless-url-shortener-with-api-gateway-lambda-and-dynamodb-on-aws 
