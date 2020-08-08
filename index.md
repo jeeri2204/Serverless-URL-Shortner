@@ -39,7 +39,7 @@ _9. API Gateway provides a redirection (HTTP 301 status code) to the long url.
 1. Create a Dynamo DB table: `url-shortener-table`
 2. Add a Primary Key Value which is String : `short_id`
 
-[!DynamoTableDetails](Screenshot 2020-08-08 at 2.42.39 PM.png)
+[!](Screenshot 2020-08-08 at 2.42.39 PM.png)
 
 ### Markdown
 
