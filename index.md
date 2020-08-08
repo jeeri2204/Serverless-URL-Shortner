@@ -39,6 +39,8 @@ _9. API Gateway provides a redirection (HTTP 301 status code) to the long url.
 1. Create a Dynamo DB table: `url-shortener-table`
 2. Add a Primary Key Value which is String : `short_id`
 
+[!DynamoTableDetails](Screenshot 2020-08-08 at 2.42.39 PM.png)
+
 ### Markdown
 
 Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
@@ -68,18 +70,11 @@ For more details see [GitHub Flavored Markdown](https://guides.github.com/featur
 Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/jeeri2204/AWS_URL_Shortner/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
 
 ### Sources 
-[1] https://aws.amazon.com/dynamodb/
-
-[2] https://aws.amazon.com/lambda/
-
-[3] https://aws.amazon.com/api-gateway/
-
-[4] https://aws.amazon.com/api-gateway/
-
-[5] https://aws.amazon.com/iam/
-
-[6] https://aws.amazon.com/route53/
-
-[7] https://aws.amazon.com/cloudfront/
-
+[1] https://aws.amazon.com/dynamodb
+[2] https://aws.amazon.com/lambda
+[3] https://aws.amazon.com/api-gateway
+[4] https://aws.amazon.com/api-gateway
+[5] https://aws.amazon.com/iam
+[6] https://aws.amazon.com/route53
+[7] https://aws.amazon.com/cloudfront
 [8] https://aws.amazon.com/certificate-manager
