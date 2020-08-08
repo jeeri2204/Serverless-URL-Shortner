@@ -46,27 +46,9 @@ When user browses the short URL:
 ### IAM Policy
 
 1. Create an IAM Policy with the : `lambda-dynamodb-url-shortener`
-2. Make sure u enter the correct details for AWS-REGION(where dynamo table is create), AWS-ACCOUNT and DYNAMO-TABLE(in our case it is `url-shortener-table`)
+2. [Download Policy Details](https://github.com/jeeri2204/Serverless-URL-Shortner/blob/gh-pages/lambda-dynamodb-url-shortener)
+3. Make sure u enter the correct details for AWS-REGION(where dynamo table is create), AWS-ACCOUNT and DYNAMO-TABLE(in our case it is `url-shortener-table`)
 
-```markdown
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "VisualEditor0",
-            "Effect": "Allow",
-            "Action": [
-                "dynamodb:PutItem",
-                "dynamodb:DeleteItem",
-                "dynamodb:GetItem",
-                "dynamodb:Query",
-                "dynamodb:UpdateItem"
-            ],
-            "Resource": "arn:aws:dynamodb:AWS-REGION:AWS-ACCOUNT:table/DYNAMO-TABLE"
-        }
-    ]
-}
-```
 
 ### IAM Role
 
@@ -78,120 +60,25 @@ When user browses the short URL:
 
 ### Lamdba to create Short URL
 
-1. Create a Lamdba function  NAME: `url-shortener-create` RUNTIME: `Python 3.6` ROLE: `lambda-dynamodb-url-shortener-role`. 
-2. Add the code below to the lamdba function. Note that I have added comments in the function to understand better. Make sute to set the region and dynamo db table name to approriate value. 
+1. Create a Lamdba function.  
+NAME: `url-shortener-create` \
+RUNTIME: `Python 3.6` \ 
+ROLE: `lambda-dynamodb-url-shortener-role`\
+2. [Add the Code to the Function ](https://github.com/jeeri2204/Serverless-URL-Shortner/blob/gh-pages/url-shortener-create)
+Note that I have added comments in the function to understand better. Make sute to set the region and dynamo db table name to approriate value. 
 3. Add 3 environment varables to the lamdba function. \
-APP_URL : CLOUNDFRONT URL to be added later (example : https://d24bkyagqs44nj.cloudfront.net/t/ ) \
+APP_URL : CLOUNDFRONT URL or CUSTOM DOMAIN URL to be added later (example : https://d24bkyagqs44nj.cloudfront.net/t/ ) \
 MIN_CHAR : 12 \
 MAX_CHAR : 16 \
 
-```markdown
-import os
-import json
-import boto3
-from string import ascii_letters, digits
-from random import choice, randint
-from time import strftime, time
-from urllib import parse
-
-app_url = os.getenv('APP_URL') #The app_url will be your domain name, as this will be returned to the client with the short id
-min_char = int(os.getenv('MIN_CHAR')) #min number of characters in short url unique string
-max_char = int(os.getenv('MAX_CHAR')). #max number of characters in short url unique string
-string_format = ascii_letters + digits
-
-ddb = boto3.resource('dynamodb', region_name = 'us-east-2').Table('url-shortener-table') #Set region and Dynamo DB table
-
-def generate_timestamp():
-    response = strftime("%Y-%m-%dT%H:%M:%S")
-    return response
-
-def expiry_date():
-    response = int(time()) + int(604800) #generate expiration date for the url based on the timestamp
-    return response
-
-def check_id(short_id):
-    if 'Item' in ddb.get_item(Key={'short_id': short_id}):
-        response = generate_id()
-    else:
-        return short_id
-
-def generate_id():
-    short_id = "".join(choice(string_format) for x in range(randint(min_char, max_char))) #generate unique value for the short url
-    print(short_id)
-    response = check_id(short_id)
-    return response
-
-def lambda_handler(event, context):
-    analytics = {}
-    print(event)
-    short_id = generate_id()
-    short_url = app_url + short_id
-    long_url = json.loads(event.get('body')).get('long_url')
-    timestamp = generate_timestamp()
-    ttl_value = expiry_date()
-
-    analytics['user_agent'] = event.get('headers').get('User-Agent')
-    analytics['source_ip'] = event.get('headers').get('X-Forwarded-For')
-    analytics['xray_trace_id'] = event.get('headers').get('X-Amzn-Trace-Id')
-
-    if len(parse.urlsplit(long_url).query) > 0:
-        url_params = dict(parse.parse_qsl(parse.urlsplit(long_url).query))
-        for k in url_params:
-            analytics[k] = url_params[k]
-
-    #put value in dynamodb table
-    response = ddb.put_item(
-        Item={
-            'short_id': short_id,
-            'created_at': timestamp,
-            'ttl': int(ttl_value),
-            'short_url': short_url,
-            'long_url': long_url,
-            'analytics': analytics,
-            'hits': int(0)
-        }
-    )
-    body_new = '{"short_id":"' +short_url+'","long_url":"'+long_url+'"}'
-    return {"statusCode": 200,"body": body_new} #return the body with long and short url
-```
-
 ### Lamdba to create Retrieve Long URL
 
-1. Create a Lamdba function  NAME: `url-shortener-retrieve` RUNTIME: `Python 3.6` ROLE: `lambda-dynamodb-url-shortener-role`. 
-2. Add the code below to the lamdba function. Note that I have added comments in the function to understand better. Make sute to set the region and dynamo db table name to approriate value. 
-
-```markdown
-import os
-import json
-import boto3
-
-ddb = boto3.resource('dynamodb', region_name = 'us-east-2').Table('url-shortener-table')
-
-def lambda_handler(event, context):
-    short_id = event.get('short_id')
-
-    try:
-        item = ddb.get_item(Key={'short_id': short_id}) #look up the take the short id value in dynamo
-        long_url = item.get('Item').get('long_url') #take the long_url value corresponding to the short id
-        # increase the hit number on the db entry of the url (analytics?)
-        ddb.update_item(
-            Key={'short_id': short_id},
-            UpdateExpression='set hits = hits + :val',
-            ExpressionAttributeValues={':val': 1}
-        )
-
-    except:
-        return {
-            'statusCode': 301,
-            'location': 'https://objects.ruanbekker.com/assets/images/404-blue.jpg'
-        }
-    
-    #return long_url and the redirection http status code 301
-    return {
-        "statusCode": 301,
-        "location": long_url
-    }
-```
+1. Create a Lamdba function    
+NAME: `url-shortener-retrieve` \
+RUNTIME: `Python 3.6` \
+ROLE: `lambda-dynamodb-url-shortener-role` \
+2. [Add the code below to the lamdba function ](https://github.com/jeeri2204/Serverless-URL-Shortner/blob/gh-pages/url-shortener-retrieve)
+Note that I have added comments in the function to understand better. Make sute to set the region and dynamo db table name to approriate value. 
 
 ### Lamdba to create Retrieve Long URL
 
