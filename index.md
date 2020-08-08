@@ -78,12 +78,12 @@ When user browses the short URL:
 
 ### Lamdba to create Short URL
 
-1. Create a Lamdba function  name: `url-shortener-create` runtime: `Python 3.6` role: `lambda-dynamodb-url-shortener-role`. 
+1. Create a Lamdba function  NAME: `url-shortener-create` RUNTIME: `Python 3.6` ROLE: `lambda-dynamodb-url-shortener-role`. 
 2. Add the code below to the lamdba function. Note that I have added comments in the function to understand better. Make sute to set the region and dynamo db table name to approriate value. 
-3. Add 3 environment varables to the lamdba function. 
-APP_URL : CLOUNDFRONT URL to be added later (example : https://d24bkyagqs44nj.cloudfront.net/t/ )
-MIN_CHAR : 12 
-MAX_CHAR : 16 
+3. Add 3 environment varables to the lamdba function. \
+APP_URL : CLOUNDFRONT URL to be added later (example : https://d24bkyagqs44nj.cloudfront.net/t/ ) \
+MIN_CHAR : 12 \
+MAX_CHAR : 16 \
 
 ```markdown
 import os
@@ -155,9 +155,47 @@ def lambda_handler(event, context):
     return {"statusCode": 200,"body": body_new} #return the body with long and short url
 ```
 
-### Jekyll Themes
+### Lamdba to create Retrieve Long URL
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/jeeri2204/AWS_URL_Shortner/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+1. Create a Lamdba function  NAME: `url-shortener-retrieve` RUNTIME: `Python 3.6` ROLE: `lambda-dynamodb-url-shortener-role`. 
+2. Add the code below to the lamdba function. Note that I have added comments in the function to understand better. Make sute to set the region and dynamo db table name to approriate value. 
+
+```markdown
+import os
+import json
+import boto3
+
+ddb = boto3.resource('dynamodb', region_name = 'us-east-2').Table('url-shortener-table')
+
+def lambda_handler(event, context):
+    short_id = event.get('short_id')
+
+    try:
+        item = ddb.get_item(Key={'short_id': short_id}) #look up the take the short id value in dynamo
+        long_url = item.get('Item').get('long_url') #take the long_url value corresponding to the short id
+        # increase the hit number on the db entry of the url (analytics?)
+        ddb.update_item(
+            Key={'short_id': short_id},
+            UpdateExpression='set hits = hits + :val',
+            ExpressionAttributeValues={':val': 1}
+        )
+
+    except:
+        return {
+            'statusCode': 301,
+            'location': 'https://objects.ruanbekker.com/assets/images/404-blue.jpg'
+        }
+    
+    #return long_url and the redirection http status code 301
+    return {
+        "statusCode": 301,
+        "location": long_url
+    }
+```
+
+### Lamdba to create Retrieve Long URL
+
+
 
 ### Sources 
 [1] https://aws.amazon.com/dynamodb \
