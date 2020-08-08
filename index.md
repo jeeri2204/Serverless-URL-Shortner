@@ -64,10 +64,17 @@ Your Pages site will use the layout and styles from the Jekyll theme you have se
 
 ### Sources 
 [1] https://aws.amazon.com/dynamodb/
+
 [2] https://aws.amazon.com/lambda/
+
 [3] https://aws.amazon.com/api-gateway/
+
 [4] https://aws.amazon.com/api-gateway/
+
 [5] https://aws.amazon.com/iam/
+
 [6] https://aws.amazon.com/route53/
+
 [7] https://aws.amazon.com/cloudfront/
+
 [8] https://aws.amazon.com/certificate-manager
