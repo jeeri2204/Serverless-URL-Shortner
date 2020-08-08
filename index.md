@@ -21,18 +21,23 @@ Are you sick of sending long cubersome URL via mails or chats which looks messy.
 
 ### Architectural Diagram and Workflow
 
-_When user wants to shorten the URL:_
-1. Client will make a request to the custom domain which hits Route53. ACM helps to secure the connection
-2. Route53 entry for your domain to resolve to the CNAME value of the target domain name which will be cloudfront distribution(CDN)
-3. CDN has the origin setup as API gateway. 
-4. API Gateway send a GET request to /admin and gets a response as the index page where user can enter a URL
-5. Once User enters the long URL it sends a POST request to /create method which calls a lamdba function. 
-6. The lambda function shortens the URL and return the short URL. It also makes an entry in the dynamo table.
+When user wants to shorten the URL:
+_1. Client will make a request to the custom domain which hits Route53. ACM helps to secure the connection
+_2. Route53 entry for your domain to resolve to the CNAME value of the target domain name which will be cloudfront distribution(CDN)
+_3. CDN has the origin setup as API gateway. 
+_4. API Gateway send a GET request to /admin and gets a response as the index page where user can enter a URL
+_5. Once User enters the long URL it sends a POST request to /create method which calls a lamdba function. 
+_6. The lambda function shortens the URL and return the short URL. It also makes an entry in the dynamo table.
 
-_When user browses the short URL:_
-7. When user enters the Short URL it calls a GET method from the API Gateway to a lamdba function.
-8. The lamdba function looks up inthe dynamo table and gives back the long URL
-9. API Gateway provides a redirection (HTTP 301 status code) to the long url.
+When user browses the short URL:
+_7. When user enters the Short URL it calls a GET method from the API Gateway to a lamdba function.
+_8. The lamdba function looks up inthe dynamo table and gives back the long URL
+_9. API Gateway provides a redirection (HTTP 301 status code) to the long url.
+
+### DynamoDB
+
+1. Create a Dynamo DB table: `url-shortener-table`
+2. Add a Primary Key Value which is String : `short_id`
 
 ### Markdown
 
