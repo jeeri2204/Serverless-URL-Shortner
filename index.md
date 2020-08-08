@@ -49,6 +49,7 @@ When user browses the short URL:
 2. [Download Policy Details](https://github.com/jeeri2204/Serverless-URL-Shortner/blob/gh-pages/lambda-dynamodb-url-shortener)
 3. Make sure u enter the correct details for AWS-REGION(where dynamo table is create), AWS-ACCOUNT and DYNAMO-TABLE(in our case it is `url-shortener-table`)
 
+![](Screenshot 2020-08-08 at 3.51.58 PM.png)
 
 ### IAM Role
 
@@ -67,9 +68,11 @@ ROLE: `lambda-dynamodb-url-shortener-role`\
 2. [Add the Code to the Function ](https://github.com/jeeri2204/Serverless-URL-Shortner/blob/gh-pages/url-shortener-create)
 Note that I have added comments in the function to understand better. Make sute to set the region and dynamo db table name to approriate value. 
 3. Add 3 environment varables to the lamdba function. \
+```markdown
 APP_URL : CLOUNDFRONT URL or CUSTOM DOMAIN URL to be added later (example : https://d24bkyagqs44nj.cloudfront.net/t/ ) \
 MIN_CHAR : 12 \
 MAX_CHAR : 16 \
+```
 
 ### Lamdba to create Retrieve Long URL
 
@@ -80,7 +83,21 @@ ROLE: `lambda-dynamodb-url-shortener-role` \
 2. [Add the code below to the lamdba function ](https://github.com/jeeri2204/Serverless-URL-Shortner/blob/gh-pages/url-shortener-retrieve)
 Note that I have added comments in the function to understand better. Make sute to set the region and dynamo db table name to approriate value. 
 
-### Lamdba to create Retrieve Long URL
+### Create NEW API
+
+1. Build a new REST API from the API Gateway console: `url-shortener-api`
+![](Screenshot 2020-08-08 at 4.47.21 PM.png)
+
+2. Create a new Resource from actions called : `/admin`. This will be location which displays the homepage
+![](Screenshot 2020-08-08 at 4.49.40 PM.png)
+
+3. Create a `GET` method with integration type as `MOCK`.  Once done it will show you a screen similar to the once below
+![](Screenshot 2020-08-08 at 4.52.26 PM.png)
+
+4. Now we will set up the Integration Reponse so that if we enter http://OUR-URL/admin , we get the homepage. Select the `Intergration Response` under GET method
+5. Under `Mapping Templates`,  click `application\json`.
+6. Copy paste the [Code present here](https://github.com/jeeri2204/Serverless-URL-Shortner/blob/gh-pages/adminfile) just like on the image shown below.
+![](Screenshot 2020-08-08 at 4.55.46 PM.png)
 
 
 
