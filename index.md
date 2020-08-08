@@ -1,6 +1,8 @@
 ## Serverless URL Shortner using AWS
 
-Are you sick of sending long cubersome URL via mails or chats which looks messy. URL shortner is a great way of managing such long URLs and whats more amazing about it that you can make it in-house with a Serverless approach which lowers your cost too of maintaining an application. When it comes to Serverless there is nothing better than AWS Managed Service. Even if you have no prior knowledge of AWS just get an account, read about the services being used and follow though the steps.
+Are you sick of sending long cubersome URL via mails or chats which looks messy. URL shortner is a great way of managing such long URLs and whats more amazing about it that you can make it in-house with a Serverless approach which lowers your cost too of maintaining an application. When it comes to Serverless there is nothing better than AWS Managed Service. AWS has already some blog regarding the same(check reference) but we will use Dynamo DB today instead Amazon S3. Even if you have no prior knowledge of AWS just get an account, read about the services being used and follow though the steps.
+
+![](Screenshot 2020-08-08 at 8.42.18 PM.png)  
 
 ### AWS Services to build a Serverless URL application
 
@@ -21,20 +23,23 @@ Are you sick of sending long cubersome URL via mails or chats which looks messy.
 
 ### Architectural Diagram and Workflow
 
+![](Untitled Diagram (1).png)
+
 When user wants to shorten the URL:
 
-1. _Client will make a request to the custom domain which hits Route53. ACM helps to secure the connection_          
+1. _Client will make a request to the custom domain which hits Route53_     
 2. _Route53 entry for your domain to resolve to the CNAME value of the target domain name which will be cloudfront distribution(CDN)_  
-3. _CDN has the origin setup as API gateway_  
-4. _API Gateway send a GET request to /admin and gets a response as the index page where user can enter a URL_      
-5. _Once User enters the long URL it sends a POST request to /create method which calls a lamdba function_  
-6. _The lambda function shortens the URL and return the short URL. It also makes an entry in the dynamo table_  
+3. _You can register an certificate for your Domain on ACM and link ACM to CDN helps to secure the connection_   
+4. _CDN has the origin setup as API gateway_  
+5. _API Gateway send a GET request to /admin and gets a response as the index page where user can enter a long URL_      
+6. _Once User enters the long URL it sends a POST request to /create method which calls a lambda function_  
+7. _The lambda function stores entry on Dynamo db table and returns the short URL to the user_  
 
 When user browses the short URL:
 
-7. _When user enters the Short URL it calls a GET method from the API Gateway to a lamdba function_    
-8. _The lamdba function looks up inthe dynamo table and gives back the long URL_ 
-9. _API Gateway provides a redirection (HTTP 301 status code) to the long url_   
+8. _When user enters the Short URL it calls a GET method from the API Gateway to a lambda function_    
+9. _The lambda function looks up in the dynamo table and gives back the long URL_ 
+10. _API Gateway provides a redirection (HTTP 301 status code) to the long url_   
 
 ### DynamoDB
 
@@ -59,28 +64,28 @@ When user browses the short URL:
 
 ![](Screenshot 2020-08-08 at 3.51.58 PM.png)
 
-### Lamdba to create Short URL
+### Lambda to create Short URL
 
-1. Create a Lamdba function.  
+1. Create a Lambda function.  
 NAME: `url-shortener-create` \
 RUNTIME: `Python 3.6` \ 
 ROLE: `lambda-dynamodb-url-shortener-role`\
 2. [Add the Code to the Function ](https://github.com/jeeri2204/Serverless-URL-Shortner/blob/gh-pages/url-shortener-create)
 Note that I have added comments in the function to understand better. Make sute to set the region and dynamo db table name to approriate value. 
-3. Add 3 environment varables to the lamdba function. \
+3. Add 3 environment varables to the lambda function. \
 ```markdown
 APP_URL : CLOUNDFRONT URL or CUSTOM DOMAIN URL to be added later (example : https://d24bkyagqs44nj.cloudfront.net/t/ ) 
 MIN_CHAR : 12 
 MAX_CHAR : 16 
 ```
 
-### Lamdba to create Retrieve Long URL
+### Lambda to create Retrieve Long URL
 
-1. Create a Lamdba function    
+1. Create a Lambda function    
 NAME: `url-shortener-retrieve` \
 RUNTIME: `Python 3.6` \
 ROLE: `lambda-dynamodb-url-shortener-role` \
-2. [Add the code below to the lamdba function ](https://github.com/jeeri2204/Serverless-URL-Shortner/blob/gh-pages/url-shortener-retrieve)
+2. [Add the code below to the lambda function ](https://github.com/jeeri2204/Serverless-URL-Shortner/blob/gh-pages/url-shortener-retrieve)
 Note that I have added comments in the function to understand better. Make sute to set the region and dynamo db table name to approriate value. 
 
 ### Create NEW API
@@ -102,10 +107,10 @@ Note that I have added comments in the function to understand better. Make sute 
 7. Select the root resource `/` resource and then create another resource called `\create`. 
 ![](Screenshot 2020-08-08 at 5.10.38 PM.png)
 
-8.Create a `POST` method,  select `Integration Type` as Lamdba function `url-shortener-create` which was used to convert long url to short.
+8.Create a `POST` method,  select `Integration Type` as Lambda function `url-shortener-create` which was used to convert long url to short.
 ![](Screenshot 2020-08-08 at 5.11.10 PM.png)
 
-***When we enter the long URL on the home page(http://URL/admin) and select the Button to shorten it,  it send a POST request to the resouce \create via API Gateway to trigger the lamdba function. Once done it will look something like the image below***
+***When we enter the long URL on the home page(http://URL/admin) and select the Button to shorten it,  it send a POST request to the resouce \create via API Gateway to trigger the lambda function. Once done it will look something like the image below***
 ![](Screenshot 2020-08-08 at 5.12.03 PM.png)
 
 10. Select the root resource `/` resource and then create another resource called `\t`. We do this do that any short url which is created will be of format http://URL/t/shortid
@@ -130,10 +135,10 @@ Note that I have added comments in the function to understand better. Make sute 
 16. Add `Location` as the Responce header
 ![](Screenshot 2020-08-08 at 5.22.18 PM.png)
 
-17. Under `Integration Response` for the GET, delete the 200 Status Code and add `301`.  Add Response hearder `Location` value as `integration.response.body.location`. This extracts the value from the lamdba function
+17. Under `Integration Response` for the GET, delete the 200 Status Code and add `301`.  Add Response hearder `Location` value as `integration.response.body.location`. This extracts the value from the lambda function
 ![](Screenshot 2020-08-08 at 5.24.44 PM.png)
 
-***What this does is when we provide the short url (whcih is in format https://URL/t/xxxxx) it triggers the lamdba function `url-shortener-retrieve`. This function returns `{"statusCode": 301,"location": long_url}`.  The Intergration Response takes the short url which we provide and redirects it to the long_url***
+***What this does is when we provide the short url (whcih is in format https://URL/t/xxxxx) it triggers the lambda function `url-shortener-retrieve`. This function returns `{"statusCode": 301,"location": long_url}`.  The Intergration Response takes the short url which we provide and redirects it to the long_url***
 
 19. Once done, Select the `Deploy API` option from action, provide the stage name such as test and click Deploy. You will be provided with the endpoint followed by the stage name.
 ![](Screenshot 2020-08-08 at 5.51.38 PM.png)
@@ -148,7 +153,7 @@ Note that I have added comments in the function to understand better. Make sute 
 5. Then create the distribution.
 ![](Screenshot 2020-08-08 at 7.42.44 PM.png)
 
-6. Add the CDN endpoint +`/t` in the lamdba function environment variable APP_URL `url-shortener-create`
+6. Add the CDN endpoint +`/t` in the lambda function environment variable APP_URL `url-shortener-create`
 ![](Screenshot 2020-08-08 at 7.44.48 PM.png)
 
 
@@ -188,12 +193,22 @@ jdeka$ curl -XGET https://d24bkyagqs44nj.cloudfront.net/t/3FDeB9ZmjC85
 {"statusCode": 301, "location": "https://www.google.com/search?q=helloworld"}
 ```
 
-***Let check the application out***
-CDN endpoint + `/admin` gives us the home page
-![](Screenshot 2020-08-08 at 7.52.36 PM.png)
+***Let check the application out***   
 
-Response back as the short URl
-![](Screenshot 2020-08-08 at 7.52.55 PM.png)
+CDN endpoint + `/admin` gives us the home page
+Response back as the short URl 
+![](Screenshot 2020-08-08 at 9.01.00 PM.png)
+
+### Custom Domain and Securing the application
+
+Our basic execution of the application is over. These are some of the added steps which can be performed by you:
+1. If we have a Custom Domain we can create a Route53 entry for our domain to resolve to the CNAME of the CDN 
+2. Update the lambda function APP_URL to your custom domain
+2. Request for a certificate to your domain from AWS Certificate Manager  
+3. Add the certificate in the Cloudfront Distribution  
+![](Screenshot 2020-08-08 at 9.14.35 PM.png)
+
+
 
 
 ### Sources 
