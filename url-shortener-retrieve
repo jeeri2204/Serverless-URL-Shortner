@@ -20,7 +20,7 @@ def lambda_handler(event, context):
     except:
         return {
             'statusCode': 301,
-            'location': 'https://objects.ruanbekker.com/assets/images/404-blue.jpg'
+            'location': 'https://blog.thomasnet.com/hs-fs/hubfs/shutterstock_774749455.jpg?width=1200&name=shutterstock_774749455.jpg'
         }
     
     #return long_url and the redirection http status code 301
