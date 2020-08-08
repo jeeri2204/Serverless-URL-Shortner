@@ -105,7 +105,7 @@ Note that I have added comments in the function to understand better. Make sute 
 8.Create a `POST` method,  select `Integration Type` as Lamdba function `url-shortener-create` which was used to convert long url to short.
 ![](Screenshot 2020-08-08 at 5.11.10 PM.png)
 
-9. ***When we enter the long URL on the home page(http://URL/admin) and select the Button to shorten it,  it send a POST request to the resouce \create via API Gateway to trigger the lamdba function. Once done it will look something like the image below***
+***When we enter the long URL on the home page(http://URL/admin) and select the Button to shorten it,  it send a POST request to the resouce \create via API Gateway to trigger the lamdba function. Once done it will look something like the image below***
 ![](Screenshot 2020-08-08 at 5.12.03 PM.png)
 
 10. Select the root resource `/` resource and then create another resource called `\t`. We do this do that any short url which is created will be of format http://URL/t/shortid
@@ -133,10 +133,68 @@ Note that I have added comments in the function to understand better. Make sute 
 17. Under `Integration Response` for the GET, delete the 200 Status Code and add `301`.  Add Response hearder `Location` value as `integration.response.body.location`. This extracts the value from the lamdba function
 ![](Screenshot 2020-08-08 at 5.24.44 PM.png)
 
-18. ***What this does is when we provide the short url (whcih is in format https://URL/t/xxxxx) it triggers the lamdba function `url-shortener-retrieve`. This function returns `{"statusCode": 301,"location": long_url}`.  The Intergration Response takes the short url which we provide and redirects it to the long_url***
+***What this does is when we provide the short url (whcih is in format https://URL/t/xxxxx) it triggers the lamdba function `url-shortener-retrieve`. This function returns `{"statusCode": 301,"location": long_url}`.  The Intergration Response takes the short url which we provide and redirects it to the long_url***
 
 19. Once done, Select the `Deploy API` option from action, provide the stage name such as test and click Deploy. You will be provided with the endpoint followed by the stage name.
 ![](Screenshot 2020-08-08 at 5.51.38 PM.png)
+
+### Create a CloudFront Distribution
+
+***Lets quickly create a cloudfront distribution which can server as an endpoint and caching service for your application***
+1. Enter the Origin Domain as the  API gateway endpoint excluding th path(for example: in my case it is https://v2ohu2mu66.execute-api.us-east-2.amazonaws.com)
+2. Enter your Origin path. This basically will be the stage name when you deployed the API (for example: in my case it is /test)
+3. Under the cache behavior settings, add `Viewer Protocol Policy` as `Redirect HTTP to HTTPS`
+4. Put `Allowed HTTP Methods` as `GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE`
+5. Then create the distribution.
+![](Screenshot 2020-08-08 at 7.42.44 PM.png)
+
+6. Add the CDN endpoint +`/t` in the lamdba function environment variable APP_URL `url-shortener-create`
+![](Screenshot 2020-08-08 at 7.44.48 PM.png)
+
+
+### Test the Application
+
+***Lets perform a quick test of the endpoints via curl***
+
+```markdown
+jdeka$ curl -XGET https://v2ohu2mu66.execute-api.us-east-2.amazonaws.com/test/admin
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Private URL shortener</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script type="text/javascript">
+
+    $(document).ready(function() {
+
+        // used only to allow local serving of files
+        $.ajaxSetup({
+            beforeSend: function(xhr) {
+                if (xhr.overrideMimeType) {
+                    xhr.overrideMimeType("application/json");
+                }
+            }
+        });
+........
+```
+```markdown
+jdeka$ curl -XPOST -H "Content-Type: application/json" https://v2ohu2mu66.execute-api.us-east-2.amazonaws.com/test/create -d '{"long_url": "https://www.google.com/search?q=helloworld"}' 
+{"short_id":"https://d24bkyagqs44nj.cloudfront.net/t/3FDeB9ZmjC85","long_url":"https://www.google.com/search?q=helloworld"}
+```
+```markdown
+jdeka$ curl -XGET https://d24bkyagqs44nj.cloudfront.net/t/3FDeB9ZmjC85
+{"statusCode": 301, "location": "https://www.google.com/search?q=helloworld"}
+```
+
+***Let check the application out***
+CDN endpoint + `/admin` gives us the home page
+![](Screenshot 2020-08-08 at 7.52.36 PM.png)
+
+Response back as the short URl
+![](Screenshot 2020-08-08 at 7.52.55 PM.png)
+
 
 ### Sources 
 [1] https://aws.amazon.com/dynamodb \
