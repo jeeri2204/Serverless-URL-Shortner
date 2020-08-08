@@ -20,7 +20,7 @@ Are you sick of sending long cubersome URL via mails or chats which looks messy.
 **AWS Route53 :** Amazon Route 53 is a highly available and scalable cloud Domain Name System (DNS) web service. ***_It will act as a DNS service for the a custom domain that you want to associate to your API._***
 
 **AWS ACM :** AWS Certificate Manager is a service that lets you easily provision, manage, and deploy public and private Secure Sockets Layer/Transport Layer Security (SSL/TLS) certificates for use with AWS services and your internal connected resources. 
-***_If we have a custom domain, ACM will help us get a custom certicate for the application._***
+***_If we have a custom domain, ACM will help us get a custom certificate for the application._***
 
 ### Architectural Diagram and Workflow
 
