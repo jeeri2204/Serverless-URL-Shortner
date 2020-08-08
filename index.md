@@ -38,36 +38,122 @@ When user browses the short URL:
 
 ### DynamoDB
 
-1. Create a Dynamo DB table: 
-```url-shortener-table```
-2. Add a Primary Key Value which is String : 
-```short_id```
+1. Create a Dynamo DB table: `url-shortener-table`
+2. Add a Primary Key Value which is String : `short_id`
 
 ![](Screenshot 2020-08-08 at 2.42.39 PM.png)
 
-### Markdown
+### IAM Policy
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+1. Create an IAM Policy with the : `lambda-dynamodb-url-shortener`
+2. Make sure u enter the correct details for AWS-REGION(where dynamo table is create), AWS-ACCOUNT and DYNAMO-TABLE(in our case it is `url-shortener-table`)
 
 ```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "dynamodb:PutItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:GetItem",
+                "dynamodb:Query",
+                "dynamodb:UpdateItem"
+            ],
+            "Resource": "arn:aws:dynamodb:AWS-REGION:AWS-ACCOUNT:table/DYNAMO-TABLE"
+        }
+    ]
+}
 ```
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+### IAM Role
+
+1. Select Trusted Entiny as Lambda from the Services
+2. Create an IAM Role: `lambda-dynamodb-url-shortener-role`
+3. Attach the IAM Policies: `AWSLambdaBasicExecution` and the one created above `lambda-dynamodb-url-shortener`
+
+![](Screenshot 2020-08-08 at 3.51.58 PM.png)
+
+### Lamdba to create Short URL
+
+1. Create a Lamdba function  name: `url-shortener-create` runtime: `Python 3.6` role: `lambda-dynamodb-url-shortener-role`. 
+2. Add the code below to the lamdba function. Note that I have added comments in the function to understand better. Make sute to set the region and dynamo db table name to approriate value. 
+3. Add 3 environment varables to the lamdba function. 
+APP_URL : CLOUNDFRONT URL to be added later (example : https://d24bkyagqs44nj.cloudfront.net/t/ )
+MIN_CHAR : 12 
+MAX_CHAR : 16 
+
+```markdown
+import os
+import json
+import boto3
+from string import ascii_letters, digits
+from random import choice, randint
+from time import strftime, time
+from urllib import parse
+
+app_url = os.getenv('APP_URL') #The app_url will be your domain name, as this will be returned to the client with the short id
+min_char = int(os.getenv('MIN_CHAR')) #min number of characters in short url unique string
+max_char = int(os.getenv('MAX_CHAR')). #max number of characters in short url unique string
+string_format = ascii_letters + digits
+
+ddb = boto3.resource('dynamodb', region_name = 'us-east-2').Table('url-shortener-table') #Set region and Dynamo DB table
+
+def generate_timestamp():
+    response = strftime("%Y-%m-%dT%H:%M:%S")
+    return response
+
+def expiry_date():
+    response = int(time()) + int(604800) #generate expiration date for the url based on the timestamp
+    return response
+
+def check_id(short_id):
+    if 'Item' in ddb.get_item(Key={'short_id': short_id}):
+        response = generate_id()
+    else:
+        return short_id
+
+def generate_id():
+    short_id = "".join(choice(string_format) for x in range(randint(min_char, max_char))) #generate unique value for the short url
+    print(short_id)
+    response = check_id(short_id)
+    return response
+
+def lambda_handler(event, context):
+    analytics = {}
+    print(event)
+    short_id = generate_id()
+    short_url = app_url + short_id
+    long_url = json.loads(event.get('body')).get('long_url')
+    timestamp = generate_timestamp()
+    ttl_value = expiry_date()
+
+    analytics['user_agent'] = event.get('headers').get('User-Agent')
+    analytics['source_ip'] = event.get('headers').get('X-Forwarded-For')
+    analytics['xray_trace_id'] = event.get('headers').get('X-Amzn-Trace-Id')
+
+    if len(parse.urlsplit(long_url).query) > 0:
+        url_params = dict(parse.parse_qsl(parse.urlsplit(long_url).query))
+        for k in url_params:
+            analytics[k] = url_params[k]
+
+    #put value in dynamodb table
+    response = ddb.put_item(
+        Item={
+            'short_id': short_id,
+            'created_at': timestamp,
+            'ttl': int(ttl_value),
+            'short_url': short_url,
+            'long_url': long_url,
+            'analytics': analytics,
+            'hits': int(0)
+        }
+    )
+    body_new = '{"short_id":"' +short_url+'","long_url":"'+long_url+'"}'
+    return {"statusCode": 200,"body": body_new} #return the body with long and short url
+```
 
 ### Jekyll Themes
 
@@ -81,4 +167,6 @@ Your Pages site will use the layout and styles from the Jekyll theme you have se
 [5] https://aws.amazon.com/iam \
 [6] https://aws.amazon.com/route53 \
 [7] https://aws.amazon.com/cloudfront \
-[8] https://aws.amazon.com/certificate-manager \
+[8] https://aws.amazon.com/certificate-manager 
+[9] https://aws.amazon.com/blogs/compute/build-a-serverless-private-url-shortener \
+[10] https://blog.ruanbekker.com/blog/2018/11/30/how-to-setup-a-serverless-url-shortener-with-api-gateway-lambda-and-dynamodb-on-aws 
