@@ -23,16 +23,16 @@ Are you sick of sending long cubersome URL via mails or chats which looks messy.
 
 When user wants to shorten the URL:
 
-_1. Client will make a request to the custom domain which hits Route53. ACM helps to secure the connection.   
+_1. Client will make a request to the custom domain which hits Route53. ACM helps to secure the connection.    
 _2. Route53 entry for your domain to resolve to the CNAME value of the target domain name which will be cloudfront distribution(CDN). 
 _3. CDN has the origin setup as API gateway.  
-_4. API Gateway send a GET request to /admin and gets a response as the index page where user can enter a URL.   
-_5. Once User enters the long URL it sends a POST request to /create method which calls a lamdba function.  
-_6. The lambda function shortens the URL and return the short URL. It also makes an entry in the dynamo table.  
+_4. API Gateway send a GET request to /admin and gets a response as the index page where user can enter a URL.    
+_5. Once User enters the long URL it sends a POST request to /create method which calls a lamdba function.   
+_6. The lambda function shortens the URL and return the short URL. It also makes an entry in the dynamo table.   
 
 When user browses the short URL:
 
-_7. When user enters the Short URL it calls a GET method from the API Gateway to a lamdba function.  
+_7. When user enters the Short URL it calls a GET method from the API Gateway to a lamdba function.   
 _8. The lamdba function looks up inthe dynamo table and gives back the long URL.  
 _9. API Gateway provides a redirection (HTTP 301 status code) to the long url.  
 
@@ -74,11 +74,11 @@ For more details see [GitHub Flavored Markdown](https://guides.github.com/featur
 Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/jeeri2204/AWS_URL_Shortner/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
 
 ### Sources 
-[1] https://aws.amazon.com/dynamodb
-[2] https://aws.amazon.com/lambda
-[3] https://aws.amazon.com/api-gateway
-[4] https://aws.amazon.com/api-gateway
-[5] https://aws.amazon.com/iam
-[6] https://aws.amazon.com/route53
-[7] https://aws.amazon.com/cloudfront
-[8] https://aws.amazon.com/certificate-manager
+[1] https://aws.amazon.com/dynamodb \
+[2] https://aws.amazon.com/lambda \
+[3] https://aws.amazon.com/api-gateway \
+[4] https://aws.amazon.com/api-gateway \
+[5] https://aws.amazon.com/iam \
+[6] https://aws.amazon.com/route53 \
+[7] https://aws.amazon.com/cloudfront \
+[8] https://aws.amazon.com/certificate-manager \
