@@ -92,7 +92,7 @@ Make sure to set the region and dynamo db table name to approriate value.
 1. Build a new REST API from the API Gateway console: `url-shortener-api`
 ![](Screenshot 2020-08-08 at 4.47.21 PM.png)
 
-### Create API Resource from homepage
+### Create API Resource for admin page
 
 ***Now we will set up an API method so that if we enter `http://URL/admin` , it fetches our homepage.***  
 
