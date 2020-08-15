@@ -1,12 +1,12 @@
-## Serverless URL Shortner using AWS
+## Serverless URL Shortener using AWS
 
-Are you sick of sending long cubersome URL via mails or chats which looks messy. URL shortner is a great way of managing such long URLs and whats more amazing about it that you can make it in-house with a Serverless approach which lowers your cost of maintaining an application. When it comes to Serverless there is nothing better than AWS Managed Service. AWS has already some blog regarding the same(check reference) but unlike the blogs, we will use DynamoDB today instead Amazon S3 since it has very high access speed. Even if you have no prior knowledge of AWS just get an account, read about the services being used and follow through the steps.
+Are you sick of sending long cubersome URL via mails or chats which looks messy. URL shortener is a great way of managing such long URLs and whats more amazing about it that you can make it in-house with a Serverless approach which lowers your cost of maintaining an application. When it comes to Serverless there is nothing better than AWS Managed Service. AWS has already some blog regarding the same(check reference) but unlike the blogs, we will use DynamoDB today instead Amazon S3 since it has very high access speed. Even if you have no prior knowledge of AWS just get an account, read about the services being used and follow through the steps.
 
 ![](images/Screenshot 2020-08-08 at 8.42.18 PM.png)  
 
 ### AWS Services to build a Serverless URL application
 
-**AWS DynamoDB :**  Amazon DynamoDB is a key-value and document database that delivers single-digit millisecond performance at any scale. It's a fully managed, multiregion, multimaster, durable database with built-in security, backup and restore, and in-memory caching for internet-scale applications. ***_In our application we are using it as a persistent store to store the mappings of lorg URLs and their shorter version._***
+**AWS DynamoDB :**  Amazon DynamoDB is a key-value and document database that delivers single-digit millisecond performance at any scale. It's a fully managed, multiregion, multimaster, durable database with built-in security, backup and restore, and in-memory caching for internet-scale applications. ***_In our application we are using it as a persistent store to store the mappings of long URLs and their shorter version._***
 
 **AWS Lambda :** AWS Lambda lets you run code without provisioning or managing servers. Also better know as Function As A Service(FaaS), you pay only for the compute time you consume. We have two lambda codes written: One for to convert long_url into short_url and push the data to DynamoDB. ***_Another for retreiving the long_url from the dynamo table everytime a user visits the short_url._***
 
@@ -52,7 +52,7 @@ When user browses the short URL:
 ### IAM Policy
 
 1. Create an IAM Policy with the : `lambda-dynamodb-url-shortener`
-2. [Download Policy Details](https://github.com/jeeri2204/Serverless-URL-Shortner/blob/gh-pages/code/lambda-dynamodb-url-shortener)
+2. [Download Policy Details](https://github.com/jeeri2204/Serverless-URL-/blob/gh-pages/code/lambda-dynamodb-url-shortener)
 3. Make sure u enter the correct details for AWS-REGION(where dynamo table is create), AWS-ACCOUNT and DYNAMO-TABLE(in our case it is `url-shortener-table`)
 
 ### IAM Role
@@ -214,7 +214,6 @@ Our basic execution of the application is over. These are some of the added step
 2. Request for a certificate to your domain from AWS Certificate Manager  
 3. Add the certificate in the Cloudfront Distribution  
 ![](images/Screenshot 2020-08-08 at 9.14.35 PM.png)
-
 
 
 
