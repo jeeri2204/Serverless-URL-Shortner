@@ -8,7 +8,7 @@ from urllib import parse
 
 app_url = os.getenv('APP_URL') #The app_url will be your domain name, as this will be returned to the client with the short id
 min_char = int(os.getenv('MIN_CHAR')) #min number of characters in short url unique string
-max_char = int(os.getenv('MAX_CHAR')). #max number of characters in short url unique string
+max_char = int(os.getenv('MAX_CHAR')) #max number of characters in short url unique string
 string_format = ascii_letters + digits
 
 ddb = boto3.resource('dynamodb', region_name = 'us-east-2').Table('url-shortener-table') #Set region and Dynamo DB table
